@@ -9,7 +9,12 @@ import {
   TablePagination,
   GridList,
   TextField,
+  Icon,
 } from '@material-ui/core';
+
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
+import jwt_decode from 'jwt-decode';
 
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 
@@ -17,10 +22,17 @@ import Input from './input';
 
 import useStyles from './styles';
 
+import { useDispatch } from 'react-redux';
+
+import icon from './icon';
+import { Navigate, useNavigate } from 'react-router-dom';
+
 const Auth = () => {
   const classes = useStyles();
   const [showPassword, setShowPassword] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleShowPassword = () =>
     setShowPassword((prevShowPassword) => !prevShowPassword);
@@ -90,6 +102,29 @@ const Auth = () => {
           >
             {isSignup ? 'Sign Up' : 'Sign In'}
           </Button>
+          <GoogleOAuthProvider clientId="479384893547-j7e41ca2qe84ccse11b123aftvbqh1nu.apps.googleusercontent.com">
+            <GoogleLogin
+              size="large"
+              onSuccess={(credentialResponse) => {
+                console.log(jwt_decode(credentialResponse.credential));
+                try {
+                  dispatch({
+                    type: 'AUTH',
+                    data: jwt_decode(credentialResponse.credential),
+                  });
+
+                  navigate('/');
+
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
+              onError={() => {
+                console.log('Login Failed');
+              }}
+            />
+          </GoogleOAuthProvider>
+
           <Grid container justify="flex-end">
             <Grid item>
               <Button onClick={switchMode}>
